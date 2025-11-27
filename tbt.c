@@ -19,10 +19,6 @@
 // string
 #include <string.h>
 
-// [DBG]
-// sleep fonksiyonu için
-// #include <windows.h>
-
 /////////////////////////////////////////////////////
 
 
@@ -45,6 +41,7 @@ void cancel_ticket();
 void create_receipt(int trip_ID, char *passengers_full_name);
 
 // check ID
+// artık zafiyetsiz çalışıyor :)
 int check_ID(int trip_ID);
 
 // print banner
@@ -73,7 +70,7 @@ void print_banner(){
 		printf("0 Exit\n");
 		printf("======================\n");
 		
-		printf("Enter number: ");
+		printf("Enter option number: ");
 
 		// &c'den önce boşluk: whitespace veya newlinei ignore et
 		scanf(" %c", &choice);
@@ -133,6 +130,29 @@ void create_trip(){
 	// "Trip" tanımlı struct sayesinde "trip" adlı struct objesini kullanıcaz.
 	Trip trip;
 	
+	// Create new trip
+	printf("======================\n");
+	printf("== Create new trip\n");
+
+	printf("Trip ID: ");
+	// check_ID'ye trip_ID_tmp verilecek ki gereksiz struct oluşturulmasın.
+	int trip_ID_tmp;
+	scanf("%d", &trip_ID_tmp);
+	
+	
+	// check_ID == 1 ise ID exist de ve çık.
+	if (check_ID(trip_ID_tmp) == 1) { 
+		printf("[ERR] ID exist."); 		
+		return; 
+	}
+	
+	
+	// check_ID == 0 ise structa ekle.
+	trip.trip_ID = trip_ID_tmp;
+
+	// check_ID işleminden sonra FILE açılır:
+	// çünkü FILE açık kalırsa sonra check_ID yapılırsa resource leak oluşur.
+	
 	// FILE structı
 	// fp represents the opened file
 	// "ab" : append binary
@@ -140,30 +160,8 @@ void create_trip(){
 	
 	// fopen başarılı olursa FILE struct return eder
 	// fopen başarısız olursa NULL return eder.
-	if (fp == NULL) { printf("[ERR] trips.tbt couldn't opened.\n"); return; }
+	if (fp == NULL) { printf("[ERR] trips.tbt couldn't opened.\n"); fclose(fp); return; }
 	
-	// Create new trip
-	printf("======================\n");
-	printf("== Create new trip\n");
-
-	printf("Trip ID: ");
-	
-	// check_ID'ye trip_ID_tmp verilecek ki gereksiz struct oluşturulmasın.
-	int trip_ID_tmp;
-	scanf("%d", &trip_ID_tmp);
-	
-	// [DBG] RESOURCE LEAK !!! comment out ediyorum.
-	/*
-	if (check_ID(input_ID) == 0) { 
-		
-		printf("[ERR] ID not exist."); 		
-		return; 
-	
-	}
-	*/
-
-	// check_ID == 0 ise structa ekle.
-	trip.trip_ID = trip_ID_tmp;
 
 	// %[^\n]s can read spaced string
     printf("Departure Point: "); scanf(" %[^\n]s", trip.departure_point); 
@@ -238,7 +236,7 @@ void query_trip(){
 	Trip trip;
 	FILE *fp = fopen(FILE_NAME, "rb");
 
-	if (fp == NULL) { printf("[INF] There is no trip.\n"); return; }
+	if (fp == NULL) { printf("[INF] There is no trip.\n"); fclose(fp); ;return; }
 	
 	// Query trip
 	printf("======================\n");
@@ -295,12 +293,12 @@ void update_trip(){
 	Trip trip;
 	
 	FILE *fp = fopen(FILE_NAME, "rb");
-	if (fp == NULL) { printf("[INF] There is no trip.\n"); return; }
+	if (fp == NULL) { printf("[INF] There is no trip.\n"); fclose(fp); return; }
 	
 	// 1) tmp.tbt'ye yeni güncellenmiş fileı yazıcaz
 	// 2) tmp.tbt'yi FILE_NAME olarak güncellicez
 	FILE *fp_tmp = fopen("tmp.tbt", "wb");
-	if (fp == NULL) { printf("[ERR] tmp.tbt couldn't opened.\n"); return; }
+	if (fp == NULL) { printf("[ERR] tmp.tbt couldn't opened.\n"); fclose(fp_tmp); return; }
 	
 	// Update trip
 	printf("======================\n");
@@ -376,12 +374,7 @@ void delete_trip() {
     FILE *fp_tmp = fopen("tmp.tbt", "wb");
     if (fp_tmp == NULL) { 
         printf("[ERR] tmp.tbt couldn't created.\n");
-        
-		
-		// [DBG]
-		// fclose(fp);
-        
-		
+
 		return; 
     }
 
@@ -390,23 +383,6 @@ void delete_trip() {
     printf("Enter ID: ");
     scanf("%d", &input_ID);
 
-	// ID check
-	
-	
-	// [DBG] RESOURCE LEAK !!! comment out ediyorum.
-	// çalıştı :)
-	/*
-	// ID exits olmalı.
-	if (check_ID(input_ID) == 0) { 
-		
-		printf("[ERR] ID not exist."); 		
-		return; 
-	
-	}
-
-	*/
-
-	
 	// == 1 'e gerek yok ama OLSUN!
     while (fread(&trip, sizeof(Trip), 1, fp) == 1) {
 
@@ -425,14 +401,8 @@ void delete_trip() {
         }
     }
 
-    // fileları kapayıtoruz ama OS sanırım yavaş kapatıyor.
-    // permission error oluyor!.
     fclose(fp);
     fclose(fp_tmp);
-
-	// [DBG]
-	// 1sn bekle
-	// Sleep(1000);
 
 	// istenen ID trips.tbt'de varsa o dosya silinecek.
 	// tmp.tbt, yeni trips.tbt olacak.
@@ -440,10 +410,6 @@ void delete_trip() {
         
         if (remove(FILE_NAME) == 0) {
             printf("[INF] trips.tbt removed.\n");
-            
-            // [DBG]
-			// 1sn bekle
-			// Sleep(1000);
             
             // silinirse rename yap
             if (rename("tmp.tbt", FILE_NAME) == 0) {
@@ -454,15 +420,11 @@ void delete_trip() {
 				
 				// perror: ERROR sebebi print eder.
                 perror("[ERR] Rename failed.");
-                
-            
+
 			}
         
 		}
 		else {
-			
-			// [DBG] burada takılıyor.
-			// FILE_NAME silinemiyor.
 			
             // trips.tbt silinemedi
 			perror("[ERR] Cannot remove trips.tbt: ");            
@@ -619,9 +581,9 @@ void cancel_ticket(){
 // input_ID FILE_NAME'de varsa 1 return eder.
 
 //
-// [DBG] flcose yok! RESOURCE LEAK vuln
+// fclose'lar olmazsa: RESOURCE LEAK vuln
 //
-/*
+
 int check_ID(int trip_ID){
 	
 	Trip trip;
@@ -630,15 +592,26 @@ int check_ID(int trip_ID){
 	
 	while (fread(&trip, sizeof(Trip), 1, fp)) {
 		if (trip.trip_ID == trip_ID) {
+			
+			// flcose(fp) eklendi.
+			// bundan sonra diğer çalıştırılken ilk önce check_ID çalıştırılır.
+			// sonra diğer fonksiyonda FILE'a erişilir.
+			fclose(fp);
 			return 1;
+		
 		}
 		
 	}
+	
+	// flcose(fp) eklendi.
+	// bundan sonra diğer çalıştırılken ilk önce check_ID çalıştırılır.
+	// sonra diğer fonksiyonda FILE'a erişilir.
+	fclose(fp);
+	
 	return 0;
 	
 	
 }
-*/
 ///////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////
