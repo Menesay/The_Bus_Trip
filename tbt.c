@@ -38,7 +38,7 @@ void cancel_ticket();
 
 // create receipt
 // it will run in sell_ticket
-void create_receipt(int trip_ID, char *passengers_full_name);
+void create_receipt(int trip_ID, char *passengers_full_name, int citizen_ID);
 
 // check ID
 // artık zafiyetsiz çalışıyor :)
@@ -458,6 +458,7 @@ void sell_ticket(){
 	int input_ID;
 	int is_found = 0;
 	char passengers_full_name[77];
+	int citizen_ID = 0;
 	
 	Trip trip;
 	
@@ -477,14 +478,19 @@ void sell_ticket(){
             
 			if (trip.number_of_sold_seat < trip.number_of_seat) {
                 
+				// Full name
 				printf("Passenger's Full Name: ");
 				scanf(" %[^\n]s", passengers_full_name);
-                
+    			
+    			// Ciziten ID
+				printf("Passenger's Citizen ID: ");
+				scanf(" %d", &citizen_ID);
+				            
 				trip.number_of_sold_seat++;
                 is_found = 1;
             
             	// create_receipte trip_ID ve passengers_full_name'i ver
-				create_receipt(trip.trip_ID, passengers_full_name);	
+				create_receipt(trip.trip_ID, passengers_full_name, citizen_ID);	
 				
 				printf("[INF] Ticket sold. Receipt created.\n");
             
@@ -623,7 +629,7 @@ int check_ID(int trip_ID){
 
 ///////////////////////////////////////////////////////
 // create_receipt
-void create_receipt(int trip_ID, char *passengers_full_name){
+void create_receipt(int trip_ID, char *passengers_full_name, int citizen_ID){
 	
 	char receipt_file_name[50];
 	
@@ -644,6 +650,7 @@ void create_receipt(int trip_ID, char *passengers_full_name){
     fprintf(f, "========RECEIPT=======\n");
 	fprintf(f, "Trip ID: %d\n", trip_ID);
     fprintf(f, "Passenger's Full Name: %s\n", passengers_full_name);
+    fprintf(f, "Passenger's Citizen ID: %d\n", citizen_ID);
     fprintf(f, "======================\n");
     fclose(f);
     
