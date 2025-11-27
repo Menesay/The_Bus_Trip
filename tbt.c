@@ -115,6 +115,7 @@ typedef struct {
     char departure_point[50];
     char arrival_point[50];
     char trip_date[20];
+    char trip_time[20];
     char drivers_full_name[50];
     char licence_plate[20];
     int  number_of_seat;
@@ -168,7 +169,8 @@ void create_trip(){
     printf("Arrival Point: "); scanf(" %[^\n]s", trip.arrival_point);
     
 	printf("Trip Date (DD.MM.YYYY): "); scanf("%s", trip.trip_date);
-    printf("Driver's Full Name: "); scanf(" %[^\n]s", trip.drivers_full_name);
+    printf("Trip Time (HH.MM): "); scanf("%s", trip.trip_time);
+	printf("Driver's Full Name: "); scanf(" %[^\n]s", trip.drivers_full_name);
     printf("License Plate: "); scanf(" %[^\n]s", trip.licence_plate);
     printf("Number of seats: "); scanf("%d", &trip.number_of_seat);
     
@@ -201,19 +203,21 @@ void list_trip(){
 	// - : sola yaz
 	// 8 : 8 karakterlik alan ver
 	// s : string
-    printf("%-8s %-18s %-18s %-12s %-18s %-15s %-12s %-8s\n", 
+    printf("%-8s %-18s %-15s %-12s %-12s %-18s %-15s %-12s %-8s\n", 
 		"Trip ID", "Departure Point", 
 		"Arrival Point", "Trip Date", 
-		"Driver Full Name", "Licence Plate",
-		"Total Seats", "Sold Tickets");
+		"Trip Time", "Driver Full Name",
+		"Licence Plate", "Total Seats",
+		"Sold Tickets");
     
     // trip struct'ını trips.tbt'den retrieve ediyor.
 	while (fread(&trip, sizeof(Trip), 1, fp)) {
-		printf("%-8d %-18s %-18s %-12s %-18s %-15s %-12d %-8d\n", 
+		printf("%-8d %-18s %-15s %-12s %-12s %-18s %-15s %-12d %-8d\n", 
 		        trip.trip_ID, 
 		        trip.departure_point, 
 		        trip.arrival_point, 
 		        trip.trip_date, 
+		        trip.trip_time,
 		        trip.drivers_full_name, 
 		        trip.licence_plate,
 		        trip.number_of_seat, 
@@ -236,7 +240,7 @@ void query_trip(){
 	Trip trip;
 	FILE *fp = fopen(FILE_NAME, "rb");
 
-	if (fp == NULL) { printf("[INF] There is no trip.\n"); fclose(fp); ;return; }
+	if (fp == NULL) { printf("[INF] There is no trip.\n"); fclose(fp); return; }
 	
 	// Query trip
 	printf("======================\n");
@@ -244,21 +248,23 @@ void query_trip(){
 	printf("Enter ID: ");
 	scanf("%d", &input_ID);
 	
-	printf("%-8s %-18s %-18s %-12s %-18s %-15s %-12s %-8s\n", 
+    printf("%-8s %-18s %-15s %-12s %-12s %-18s %-15s %-12s %-8s\n", 
 		"Trip ID", "Departure Point", 
 		"Arrival Point", "Trip Date", 
-		"Driver Full Name", "Licence Plate",
-		"Total Seats", "Sold Tickets");
+		"Trip Time", "Driver Full Name",
+		"Licence Plate", "Total Seats",
+		"Sold Tickets");
 
 	while (fread(&trip, sizeof(Trip), 1, fp)){
 		
 		// input ID bulunursa listele
 		if (trip.trip_ID == input_ID){
-			printf("%-8d %-18s %-18s %-12s %-18s %-15s %-12d %-8d\n", 
+			printf("%-8d %-18s %-15s %-12s %-12s %-18s %-15s %-12d %-8d\n", 
 		        trip.trip_ID, 
 		        trip.departure_point, 
 		        trip.arrival_point, 
-		        trip.trip_date, 
+		        trip.trip_date,
+				trip.trip_time, 
 		        trip.drivers_full_name,
 		        trip.licence_plate,
 		        trip.number_of_seat, 
@@ -311,6 +317,7 @@ void update_trip(){
 		    printf("New Departure Point: "); scanf(" %[^\n]s", trip.departure_point); 
 		    printf("New Arrival Point: "); scanf(" %[^\n]s", trip.arrival_point);
 			printf("New Trip Date (DD.MM.YYYY): "); scanf("%s", trip.trip_date);
+			printf("Trip Time (HH.MM): "); scanf("%s", trip.trip_time);
 		    printf("New Driver's full name: "); scanf(" %[^\n]s", trip.drivers_full_name);
 		    printf("New Plate Licence: "); scanf(" %[^\n]s", trip.licence_plate);
 		    printf("New Number of seats: "); scanf("%d", &trip.number_of_seat);
@@ -319,7 +326,7 @@ void update_trip(){
 			// program otomatik kendisi halledicek
 			// sell_ticket arttırır
 			// cancel_ticket azaltır
-          
+        
 			is_found = 1;
         }
         
@@ -650,7 +657,6 @@ void create_receipt(int trip_ID, char *passengers_full_name){
 // main()
 int main(){
 	print_banner();
-    printf("this is windows");
     return 0;
 }
 //////////////////////////////////////////////////////
