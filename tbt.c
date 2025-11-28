@@ -165,13 +165,12 @@ void create_trip(){
 	
 
 	// %[^\n]s can read spaced string
-    printf("Departure Point: "); scanf(" %[^\n]s", trip.departure_point); 
-    printf("Arrival Point: "); scanf(" %[^\n]s", trip.arrival_point);
-    
-	printf("Trip Date (DD.MM.YYYY): "); scanf("%s", trip.trip_date);
-    printf("Trip Time (HH.MM): "); scanf("%s", trip.trip_time);
-	printf("Driver's Full Name: "); scanf(" %[^\n]s", trip.drivers_full_name);
-    printf("License Plate: "); scanf(" %[^\n]s", trip.licence_plate);
+    printf("Departure Point: "); scanf(" %49[^\n]s", trip.departure_point); 
+    printf("Arrival Point: "); scanf(" %49[^\n]s", trip.arrival_point);
+	printf("Trip Date (DD.MM.YYYY): "); scanf("%19s", trip.trip_date);
+    printf("Trip Time (HH.MM): "); scanf("%19s", trip.trip_time);
+	printf("Driver's Full Name: "); scanf(" %49[^\n]s", trip.drivers_full_name);
+    printf("License Plate: "); scanf(" %19[^\n]s", trip.licence_plate);
     printf("Number of seats: "); scanf("%d", &trip.number_of_seat);
     
     // Default 0.
@@ -314,12 +313,12 @@ void update_trip(){
 	
 	while (fread(&trip, sizeof(Trip), 1, fp)) {
         if (trip.trip_ID == input_ID) {
-		    printf("New Departure Point: "); scanf(" %[^\n]s", trip.departure_point); 
-		    printf("New Arrival Point: "); scanf(" %[^\n]s", trip.arrival_point);
-			printf("New Trip Date (DD.MM.YYYY): "); scanf("%s", trip.trip_date);
-			printf("Trip Time (HH.MM): "); scanf("%s", trip.trip_time);
-		    printf("New Driver's full name: "); scanf(" %[^\n]s", trip.drivers_full_name);
-		    printf("New Plate Licence: "); scanf(" %[^\n]s", trip.licence_plate);
+		    printf("New Departure Point: "); scanf(" %49[^\n]s", trip.departure_point); 
+		    printf("New Arrival Point: "); scanf(" %49[^\n]s", trip.arrival_point);
+			printf("New Trip Date (DD.MM.YYYY): "); scanf("%19s", trip.trip_date);
+			printf("New Trip Time (HH.MM): "); scanf("%19s", trip.trip_time);
+		    printf("New Driver's full name: "); scanf(" %49[^\n]s", trip.drivers_full_name);
+		    printf("New Plate Licence: "); scanf(" %19[^\n]s", trip.licence_plate);
 		    printf("New Number of seats: "); scanf("%d", &trip.number_of_seat);
 
 			// number_of_sold_seats'e dokunmuyoruz. çünkü bu usera teslim edilmemeli
@@ -480,7 +479,7 @@ void sell_ticket(){
                 
 				// Full name
 				printf("Passenger's Full Name: ");
-				scanf(" %[^\n]s", passengers_full_name);
+				scanf(" %76[^\n]s", passengers_full_name);
     			
     			// Ciziten ID
 				printf("Passenger's Citizen ID: ");
@@ -542,7 +541,7 @@ void cancel_ticket(){
 	printf("Enter ID: ");
 	scanf("%d", &input_ID);
 	printf("Passenger's Full Name: ");
-	scanf(" %[^\n]s", passengers_full_name);
+	scanf(" %76[^\n]s", passengers_full_name);
 	
 	
 	while (fread(&trip, sizeof(Trip), 1, fp)) {
