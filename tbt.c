@@ -41,7 +41,6 @@ void cancel_ticket();
 void create_receipt(int trip_ID, char *passengers_full_name, int citizen_ID);
 
 // check ID
-// artık zafiyetsiz çalışıyor :)
 int check_ID(int trip_ID);
 
 // print banner
@@ -72,13 +71,12 @@ void print_banner(){
 		
 		printf("Enter option number: ");
 
-		// &c'den önce boşluk: whitespace veya newlinei ignore et
+		// space before &c: ignore whitespace or newline
 		scanf(" %c", &choice);
 		
-		// güzel görünsün diye
 		printf("\n");
 		
-		// Redirect to the function
+		// Redirecting to the functions
 		switch(choice){
 			
 			case '1': create_trip();   break;
@@ -106,10 +104,6 @@ const char *FILE_NAME = "trips.tbt";
 
 ///////////////////////////////////////////////////////
 // trip struct
-// bus's trip ID, departure point, arrival point, 
-// trip date, departure time, bus license plate,
-// driver's full name, number of seats and any other information.
-// verisi tutulacak
 typedef struct {
     int  trip_ID;
     char departure_point[50];
@@ -128,7 +122,7 @@ typedef struct {
 // create_trip()
 void create_trip(){
 	
-	// "Trip" tanımlı struct sayesinde "trip" adlı struct objesini kullanıcaz.
+	// We are gonna use "trip" struct, with "Trip" defined struct.
 	Trip trip;
 	
 	// Create new trip
@@ -136,31 +130,32 @@ void create_trip(){
 	printf("== Create new trip\n");
 
 	printf("Trip ID: ");
-	// check_ID'ye trip_ID_tmp verilecek ki gereksiz struct oluşturulmasın.
+	// trip_ID_tmp will passed to check_ID for avoiding unnecessary struct.
 	int trip_ID_tmp;
 	scanf("%d", &trip_ID_tmp);
 	
 	
-	// check_ID == 1 ise ID exist de ve çık.
+	// if check_ID == 1 then ID exist and exit.
 	if (check_ID(trip_ID_tmp) == 1) { 
 		printf("[ERR] ID exist."); 		
 		return; 
 	}
 	
 	
-	// check_ID == 0 ise structa ekle.
+	// if check_ID == 0 add to trip struct.
 	trip.trip_ID = trip_ID_tmp;
 
-	// check_ID işleminden sonra FILE açılır:
-	// çünkü FILE açık kalırsa sonra check_ID yapılırsa resource leak oluşur.
+
+	// We must open the file after check_ID process
+	// because if FILE remain in opened status, it will be resource leak.
 	
-	// FILE structı
+	// FILE struct
 	// fp represents the opened file
 	// "ab" : append binary
 	FILE *fp = fopen(FILE_NAME, "ab");
 	
-	// fopen başarılı olursa FILE struct return eder
-	// fopen başarısız olursa NULL return eder.
+	// if fopen success then return FILE struct.
+	// if fopen fail then return NULL and close the file and exit.
 	if (fp == NULL) { printf("[ERR] trips.tbt couldn't opened.\n"); fclose(fp); return; }
 	
 
@@ -199,9 +194,9 @@ void list_trip(){
 	printf("======================\n");
 	printf("== List trips\n");
 	
-	// - : sola yaz
-	// 8 : 8 karakterlik alan ver
-	// s : string
+	// - : write to the left
+	// 8 : allocate 8 chars space
+	// s : string literal
     printf("%-8s %-18s %-15s %-12s %-12s %-18s %-15s %-12s %-8s\n", 
 		"Trip ID", "Departure Point", 
 		"Arrival Point", "Trip Date", 
@@ -209,7 +204,7 @@ void list_trip(){
 		"Licence Plate", "Total Seats",
 		"Sold Tickets");
     
-    // trip struct'ını trips.tbt'den retrieve ediyor.
+    // it retrives trip struct from trips.tbt.
 	while (fread(&trip, sizeof(Trip), 1, fp)) {
 		printf("%-8d %-18s %-15s %-12s %-12s %-18s %-15s %-12d %-8d\n", 
 		        trip.trip_ID, 
@@ -256,7 +251,7 @@ void query_trip(){
 
 	while (fread(&trip, sizeof(Trip), 1, fp)){
 		
-		// input ID bulunursa listele
+		// if input ID found then list.
 		if (trip.trip_ID == input_ID){
 			printf("%-8d %-18s %-15s %-12s %-12s %-18s %-15s %-12d %-8d\n", 
 		        trip.trip_ID, 
@@ -275,7 +270,7 @@ void query_trip(){
 		
 	}
 	
-	// ID yoksa print et.
+	// if ID not exist then print.
 	if (!ID_found){ printf("[ERR] ID not exist.\n");}
 	
 	fclose(fp);
@@ -290,9 +285,6 @@ void query_trip(){
 void update_trip(){
 	
 	int input_ID;
-	
-	// 0'la başlamalı
-	// yoksa ilerdeki if(is_found) şans eseri 1 gelebilir.
 	int is_found = 0;
 	
 	Trip trip;
@@ -300,8 +292,8 @@ void update_trip(){
 	FILE *fp = fopen(FILE_NAME, "rb");
 	if (fp == NULL) { printf("[INF] There is no trip.\n"); fclose(fp); return; }
 	
-	// 1) tmp.tbt'ye yeni güncellenmiş fileı yazıcaz
-	// 2) tmp.tbt'yi FILE_NAME olarak güncellicez
+	// 1) were gonna write updated file to tmp.tbt
+	// 2) were gonna make FILE_NAME = tmp.tbt
 	FILE *fp_tmp = fopen("tmp.tbt", "wb");
 	if (fp == NULL) { printf("[ERR] tmp.tbt couldn't opened.\n"); fclose(fp_tmp); return; }
 	
@@ -321,15 +313,12 @@ void update_trip(){
 		    printf("New Plate Licence: "); scanf(" %19[^\n]s", trip.licence_plate);
 		    printf("New Number of seats: "); scanf("%d", &trip.number_of_seat);
 
-			// number_of_sold_seats'e dokunmuyoruz. çünkü bu usera teslim edilmemeli
-			// program otomatik kendisi halledicek
-			// sell_ticket arttırır
-			// cancel_ticket azaltır
+			// number_of_sold_seats shouldnt be updated. its not necessary.
         
 			is_found = 1;
         }
         
-        // tmp.tbt'ye yaz.
+        // write to tmp.tbt.
         fwrite(&trip, sizeof(Trip), 1, fp_tmp);
     }
 
@@ -337,7 +326,7 @@ void update_trip(){
     fclose(fp_tmp);
 
     if (is_found) {
-    	// OS bizim için siliyor.
+
         remove(FILE_NAME);
         
 		rename("tmp.tbt", FILE_NAME);
@@ -360,15 +349,10 @@ void delete_trip() {
     int is_found = 0;
     Trip trip;
 
-	// [DBG]
-	// bi türlü çalışmadı
-	// ben de **aşırı agresif debug** ekledim tüm adımlar kontrol ediliyor.
+	// i added lots of debug message error for debugging.
 	
-	// şimdi program çalıştırılınca permission error veriyor.
-	// bu administratorluk ile ilgili değil!
-	// sanırım race condition hatası oluyor.
-	// OS fileı kapatamadan ben remove ve rename yapıyorum ve
-	// PATlıyor
+	// it was throwing permission errors all the time.
+	// until i found it caused by lack of fclose
 
     FILE *fp = fopen(FILE_NAME, "rb");
     if (fp == NULL) { 
@@ -389,7 +373,6 @@ void delete_trip() {
     printf("Enter ID: ");
     scanf("%d", &input_ID);
 
-	// == 1 'e gerek yok ama OLSUN!
     while (fread(&trip, sizeof(Trip), 1, fp) == 1) {
 
         if (trip.trip_ID == input_ID) {
@@ -399,7 +382,7 @@ void delete_trip() {
 
         } else {
 
-			// ID eşleşmediyse tempe yaz
+			// if trip_ID != input_ID then write to the temp.
             if(fwrite(&trip, sizeof(Trip), 1, fp_tmp) != 1){
                 printf("[ERR] Write error to tmp.tbt.\n");
 
@@ -410,21 +393,21 @@ void delete_trip() {
     fclose(fp);
     fclose(fp_tmp);
 
-	// istenen ID trips.tbt'de varsa o dosya silinecek.
-	// tmp.tbt, yeni trips.tbt olacak.
+	// if trips.tbt contains input_ID then remove trips.tbt
+	// rename(tmp.tbt, FILE_NAME)
     if (is_found) {
         
         if (remove(FILE_NAME) == 0) {
             printf("[INF] trips.tbt removed.\n");
             
-            // silinirse rename yap
+            // rename it only when if it removed
             if (rename("tmp.tbt", FILE_NAME) == 0) {
                 printf("[INF] trips.tbt deleted and tmp.tbt renamed.\n");
             
 			} 
 			else {
 				
-				// perror: ERROR sebebi print eder.
+				// perror: prints stderr.
                 perror("[ERR] Rename failed.");
 
 			}
@@ -432,7 +415,7 @@ void delete_trip() {
 		}
 		else {
 			
-            // trips.tbt silinemedi
+            // trips.tbt cannot removed
 			perror("[ERR] Cannot remove trips.tbt: ");            
 			remove("tmp.tbt");
 			
@@ -440,7 +423,7 @@ void delete_trip() {
         
     }
 	else {
-		// istenen ID yoksa tmp.tbt'yi sil.
+		// if trips.tbt not contains input_ID then remove tmp.tbt.
         remove("tmp.tbt");
         printf("[ERR] ID %d not exist.\n", input_ID);
     }
@@ -488,7 +471,6 @@ void sell_ticket(){
 				trip.number_of_sold_seat++;
                 is_found = 1;
             
-            	// create_receipte trip_ID ve passengers_full_name'i ver
 				create_receipt(trip.trip_ID, passengers_full_name, citizen_ID);	
 				
 				printf("[INF] Ticket sold. Receipt created.\n");
@@ -547,7 +529,7 @@ void cancel_ticket(){
 	while (fread(&trip, sizeof(Trip), 1, fp)) {
 		if (trip.trip_ID == input_ID) {
 			
-				// satılan > 0 ise azalt.
+				// if sold > 0 then decrease sold.
 				if(trip.number_of_sold_seat > 0) {
 					
 					trip.number_of_sold_seat--;
@@ -560,7 +542,6 @@ void cancel_ticket(){
 			
 		}
 		
-		// Güncellenmiş bilgilere göre temp e yaz hepsini
 		fwrite(&trip, sizeof(Trip), 1 ,fp_tmp);
 		
 	}
@@ -570,11 +551,11 @@ void cancel_ticket(){
 	
 	if (is_found) {
 		
-		// eğer cancel ticket işlemi gerçekleşirse eskiyi sil ve tempi yeni dosya yap.
+		// if cancel ticket process succcess then remove the old one and rename("tmp.tbt", FILE_NAME)
 		remove(FILE_NAME);
 		rename("tmp.tbt", FILE_NAME);
 		
-		// receipt_trip_ID_ passengers_full_name.txt'yi sil.
+		// remove receipt_trip_ID_ passengers_full_name.txt.
 		sprintf(receipt_file_name, "receipt_%d_%s.txt",
 		input_ID, passengers_full_name);
 		remove(receipt_file_name);
@@ -590,10 +571,10 @@ void cancel_ticket(){
 
 ///////////////////////////////////////////////////////
 // Check ID
-// input_ID FILE_NAME'de varsa 1 return eder.
+// if FILE_NAME contains input_ID then return 1.
 
 //
-// fclose'lar olmazsa: RESOURCE LEAK vuln
+// attention to fclose: if we dont use it will be RESOURCE LEAK vuln.
 //
 
 int check_ID(int trip_ID){
@@ -605,9 +586,8 @@ int check_ID(int trip_ID){
 	while (fread(&trip, sizeof(Trip), 1, fp)) {
 		if (trip.trip_ID == trip_ID) {
 			
-			// flcose(fp) eklendi.
-			// bundan sonra diğer çalıştırılken ilk önce check_ID çalıştırılır.
-			// sonra diğer fonksiyonda FILE'a erişilir.
+			// added fclose(fp);
+            // first check_ID use the file after that the others use.
 			fclose(fp);
 			return 1;
 		
@@ -615,9 +595,8 @@ int check_ID(int trip_ID){
 		
 	}
 	
-	// flcose(fp) eklendi.
-	// bundan sonra diğer çalıştırılken ilk önce check_ID çalıştırılır.
-	// sonra diğer fonksiyonda FILE'a erişilir.
+	// added fclose(fp);
+    // first check_ID use the file after that the others use.
 	fclose(fp);
 	
 	return 0;
@@ -632,10 +611,8 @@ void create_receipt(int trip_ID, char *passengers_full_name, int citizen_ID){
 	
 	char receipt_file_name[50];
 	
-	// unique file name oluşturuyor.
-	// snprintf ile receipt_tripID_passengers_full_name formatında file name oluşturuluyor.
-	// n: buffer overflow koruması file name buffer sizeı ile kısıtlanıyor.
-	// [DEV] buffer overflow  önlemi!
+	// creating unique file name.
+	// receipt_tripID_passengers_full_name formatted file name creating with sprintf.
     sprintf(receipt_file_name, "receipt_%d_%s.txt",
 		trip_ID, passengers_full_name);
 	    
@@ -643,7 +620,7 @@ void create_receipt(int trip_ID, char *passengers_full_name, int citizen_ID){
     
 	if (f == NULL) { printf("[ERR] receipt file couldn't opened.\n"); return; }
 	
-	// fprintf ile receipt_file_name'e yaz
+	// write to receipt_file_name with fprintf
 	fprintf(f, "======================\n");
 	fprintf(f, "=====THE BUS TRIP=====\n");
     fprintf(f, "========RECEIPT=======\n");
