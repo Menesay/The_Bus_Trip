@@ -73,7 +73,8 @@ void print_banner(){
 
 		// space before &c: ignore whitespace or newline
 		scanf(" %c", &choice);
-		
+
+		// for good looking
 		printf("\n");
 		
 		// Redirecting to the functions
@@ -104,6 +105,7 @@ const char *FILE_NAME = "trips.tbt";
 
 ///////////////////////////////////////////////////////
 // trip struct
+// typedef: we can use directly Trip trip; with typedef.
 typedef struct {
     int  trip_ID;
     char departure_point[50];
@@ -160,6 +162,7 @@ void create_trip(){
 	
 
 	// %[^\n]s can read spaced string
+	// %49: the limit of input is 49 chars.
     printf("Departure Point: "); scanf(" %49[^\n]s", trip.departure_point); 
     printf("Arrival Point: "); scanf(" %49[^\n]s", trip.arrival_point);
 	printf("Trip Date (DD.MM.YYYY): "); scanf("%19s", trip.trip_date);
@@ -171,6 +174,7 @@ void create_trip(){
     // Default 0.
 	trip.number_of_sold_seat = 0;
 
+	// Write trip struct to FILE_NAME
     fwrite(&trip, sizeof(Trip), 1, fp);
     fclose(fp);
     printf("[INF] Trip added.\n");
@@ -188,7 +192,8 @@ void list_trip(){
 	// read binary
     FILE *fp = fopen(FILE_NAME, "rb");
     
-    if (fp == NULL) { printf("[INF] There is no trip.\n"); return; }
+    // if fp could'nt opened then thow a info and close the file and exit from the function.
+    if (fp == NULL) { printf("[INF] There is no trip.\n"); fclose(fp); return; }
 
 	// list trips
 	printf("======================\n");
@@ -205,6 +210,8 @@ void list_trip(){
 		"Sold Tickets");
     
     // it retrives trip struct from trips.tbt.
+    // while: if fread success then return 1 every successfull read. while will run until fread ends.
+    // 1: read 1 object.
 	while (fread(&trip, sizeof(Trip), 1, fp)) {
 		printf("%-8d %-18s %-15s %-12s %-12s %-18s %-15s %-12d %-8d\n", 
 		        trip.trip_ID, 
@@ -230,7 +237,10 @@ void list_trip(){
 void query_trip(){
 
 	int input_ID;
+
+	// if trip.trip_ID == input_ID then ID_found = 1.
 	int ID_found;
+	
 	Trip trip;
 	FILE *fp = fopen(FILE_NAME, "rb");
 
@@ -318,7 +328,7 @@ void update_trip(){
 			is_found = 1;
         }
         
-        // write to tmp.tbt.
+        // write updated trip to tmp.tbt.
         fwrite(&trip, sizeof(Trip), 1, fp_tmp);
     }
 
@@ -327,12 +337,16 @@ void update_trip(){
 
     if (is_found) {
 
+    	// remove old file
         remove(FILE_NAME);
         
+        // rename tmp.tbt (updated file) to trips.tbt
 		rename("tmp.tbt", FILE_NAME);
         printf("[INF] Trip updated.\n");
     
 	} else {
+
+		// if it is not found then remove tmp.tbt. its unnecessary now.
         remove("tmp.tbt");
         printf("[ERR] ID not exist.\n");
     }
@@ -356,7 +370,11 @@ void delete_trip() {
 
     FILE *fp = fopen(FILE_NAME, "rb");
     if (fp == NULL) { 
-        printf("[INF] There is no trip.\n"); 
+        
+        printf("[INF] There is no trip.\n");
+
+        // closing file for preventing resource leak.
+        fclose(fp);
         return; 
     }
 
@@ -364,10 +382,11 @@ void delete_trip() {
     FILE *fp_tmp = fopen("tmp.tbt", "wb");
     if (fp_tmp == NULL) { 
         printf("[ERR] tmp.tbt couldn't created.\n");
-
+        fclose(fp);
 		return; 
     }
 
+    // Delete trip
     printf("======================\n");
     printf("== Delete trip\n");
     printf("Enter ID: ");
@@ -445,9 +464,9 @@ void sell_ticket(){
 	Trip trip;
 	
 	FILE *fp = fopen(FILE_NAME, "rb");
-	if (fp == NULL) { printf("[INF] There is no trip.\n"); return; }
+	if (fp == NULL) { printf("[INF] There is no trip.\n"); fclose(fp); return; }
 	FILE *fp_tmp = fopen("tmp.tbt", "wb");
-	if (fp_tmp == NULL) { printf("[ERR] tmp.tbt couldn't opened.\n"); return; }
+	if (fp_tmp == NULL) { printf("[ERR] tmp.tbt couldn't opened.\n"); fclose(fp); return; }
 	
 	// Sell ticket
 	printf("======================\n");
@@ -459,6 +478,8 @@ void sell_ticket(){
         if (trip.trip_ID == input_ID) {
             
 			if (trip.number_of_sold_seat < trip.number_of_seat) {
+
+				// if trip is found and sold seat < number of seat then add passenger
                 
 				// Full name
 				printf("Passenger's Full Name: ");
@@ -480,6 +501,8 @@ void sell_ticket(){
             }
         
 		}
+
+		// write updated trip.number_of_sold_seat to the trips.tbt.
         fwrite(&trip, sizeof(Trip), 1, fp_tmp);
     }
 
@@ -614,11 +637,11 @@ void create_receipt(int trip_ID, char *passengers_full_name, int citizen_ID){
 	// creating unique file name.
 	// receipt_tripID_passengers_full_name formatted file name creating with sprintf.
     sprintf(receipt_file_name, "receipt_%d_%s.txt",
-		trip_ID, passengers_full_name);
+		    trip_ID, passengers_full_name);
 	    
     FILE *f = fopen(receipt_file_name, "w");
     
-	if (f == NULL) { printf("[ERR] receipt file couldn't opened.\n"); return; }
+	if (f == NULL) { printf("[ERR] receipt file couldn't opened.\n"); fclose(f); return; }
 	
 	// write to receipt_file_name with fprintf
 	fprintf(f, "======================\n");
@@ -643,4 +666,5 @@ int main(){
     return 0;
 }
 //////////////////////////////////////////////////////
+
 
