@@ -169,7 +169,7 @@ void create_trip(){
     printf("Trip Time (HH.MM): "); scanf("%19s", trip.trip_time);
 	printf("Driver's Full Name: "); scanf(" %49[^\n]s", trip.drivers_full_name);
     printf("License Plate: "); scanf(" %19[^\n]s", trip.licence_plate);
-    printf("Number of seats: "); scanf("%d", &trip.number_of_seat);
+    printf("Number of Seats: "); scanf("%d", &trip.number_of_seat);
     
     // Default 0.
 	trip.number_of_sold_seat = 0;
@@ -319,9 +319,9 @@ void update_trip(){
 		    printf("New Arrival Point: "); scanf(" %49[^\n]s", trip.arrival_point);
 			printf("New Trip Date (DD.MM.YYYY): "); scanf("%19s", trip.trip_date);
 			printf("New Trip Time (HH.MM): "); scanf("%19s", trip.trip_time);
-		    printf("New Driver's full name: "); scanf(" %49[^\n]s", trip.drivers_full_name);
+		    printf("New Driver's Full Name: "); scanf(" %49[^\n]s", trip.drivers_full_name);
 		    printf("New Plate Licence: "); scanf(" %19[^\n]s", trip.licence_plate);
-		    printf("New Number of seats: "); scanf("%d", &trip.number_of_seat);
+		    printf("New Number of Seats: "); scanf("%d", &trip.number_of_seat);
 
 			// number_of_sold_seats shouldnt be updated. its not necessary.
         
@@ -396,7 +396,7 @@ void delete_trip() {
 
         if (trip.trip_ID == input_ID) {
 
-            printf("[INF] ID %d found. The trips.tbt will be deleted.\n", input_ID);
+            printf("[INF] ID %d found. It will be deleted.\n", input_ID);
             is_found = 1;
 
         } else {
@@ -417,11 +417,15 @@ void delete_trip() {
     if (is_found) {
         
         if (remove(FILE_NAME) == 0) {
-            printf("[INF] trips.tbt removed.\n");
+            
+            // [DBG] used for debug
+			//printf("[INF] trips.tbt removed.\n");
             
             // rename it only when if it removed
             if (rename("tmp.tbt", FILE_NAME) == 0) {
-                printf("[INF] trips.tbt deleted and tmp.tbt renamed.\n");
+                
+				// [DBG] used for debug
+				// printf("[INF] trips.tbt deleted and tmp.tbt renamed.\n");
             
 			} 
 			else {
@@ -657,6 +661,8 @@ void create_receipt(int trip_ID, char *passengers_full_name, int citizen_ID){
 ///////////////////////////////////////////////////////
 
 
+
+
 //////////////////////////////////////////////////////
 // main()
 int main(){
@@ -664,6 +670,4 @@ int main(){
     return 0;
 }
 //////////////////////////////////////////////////////
-
-
 
