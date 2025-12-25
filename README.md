@@ -5,3 +5,5 @@ Bus triping and ticketing system with CLI written in C.
 <br>
 
 ---
+# Documentation
+[DOC](report.pdf "doc")
